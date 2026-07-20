@@ -1,0 +1,13 @@
+/* Typography Imports and Styles */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+body {
+  font-family: var(--font-family-main);
+  color: var(--color-text-main);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--color-text-heading);
+  font-weight: 700;
+  line-height: 1.2;
+}

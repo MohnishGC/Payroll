@@ -1,0 +1,106 @@
+.ui-table-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  background-color: var(--color-surface);
+}
+
+.ui-table-wrapper {
+  overflow-x: auto;
+  width: 100%;
+}
+
+.ui-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13.5px;
+}
+
+.ui-table th {
+  background-color: var(--color-input-bg);
+  padding: 12px 18px;
+  font-weight: 700;
+  color: var(--color-text-heading);
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+
+.ui-table td {
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-main);
+  vertical-align: middle;
+}
+
+.ui-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.ui-table tbody tr:hover {
+  background-color: #F8FAFC;
+}
+
+.ui-table__loading-cell,
+.ui-table__empty-cell {
+  text-align: center;
+  padding: 32px 18px !important;
+  color: var(--color-text-muted);
+}
+
+.ui-table__loading-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.ui-table__pagination-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background-color: var(--color-input-bg);
+  border-top: 1px solid var(--color-border);
+}
+
+.ui-table__pagination-info {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.ui-table__pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ui-table__page-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--color-text-heading);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.ui-table__page-btn:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background-color: var(--color-primary-bg);
+}
+
+.ui-table__page-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

@@ -1,0 +1,118 @@
+.employee-search-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+.employee-search-modal__filter-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 20px;
+  width: 100%;
+}
+
+.employee-search-modal__dept-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 240px;
+  flex-shrink: 0;
+}
+
+.employee-search-modal__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-heading);
+}
+
+.employee-search-modal__select {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-input-bg);
+  font-size: 13.5px;
+  color: var(--color-text-main);
+  outline: none;
+}
+
+.employee-search-modal__select:focus {
+  border-color: var(--color-primary);
+  background-color: var(--color-surface);
+}
+
+.employee-search-modal__search-input-wrapper {
+  position: relative;
+  flex: 1;
+}
+
+.employee-search-modal__clear-search-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--color-text-light);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.employee-search-modal__clear-search-btn:hover {
+  color: var(--color-danger);
+}
+
+.employee-search-modal__select-btn {
+  padding: 6px 14px;
+  border-radius: var(--radius-md);
+  background-color: var(--color-primary-bg);
+  color: var(--color-primary);
+  border: 1px solid #BFDBFE;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.employee-search-modal__select-btn:hover {
+  background-color: var(--color-primary);
+  color: var(--color-text-white);
+  border-color: var(--color-primary);
+}
+
+.employee-search-modal__code-badge {
+  font-family: monospace;
+  font-weight: 700;
+  color: var(--color-text-heading);
+  background-color: var(--color-input-bg);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+}
+
+.employee-search-modal__name-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.employee-search-modal__avatar-mini {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  background: var(--color-primary-gradient);
+  color: var(--color-text-white);
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.employee-search-modal__name-text {
+  font-weight: 600;
+  color: var(--color-text-heading);
+}

@@ -1,0 +1,108 @@
+.add-employee-modal__wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+
+.add-employee-modal__tab-bar {
+  flex-shrink: 0;
+  margin-bottom: 20px;
+}
+
+.add-employee-modal__submit-error {
+  margin-bottom: 16px;
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
+  background-color: var(--color-error-bg);
+  border: 1px solid var(--color-error-border);
+  color: var(--color-error);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.add-employee-modal__form-body {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+/* Discard Confirm Overlay */
+.add-employee-modal__discard-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 50;
+  animation: modal-fade-in 0.15s ease-out;
+}
+
+.add-employee-modal__discard-box {
+  background-color: var(--color-surface);
+  border-radius: var(--radius-xl);
+  padding: 24px;
+  max-width: 440px;
+  width: 100%;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border: 1px solid var(--color-border);
+}
+
+.add-employee-modal__discard-title {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--color-text-heading);
+}
+
+.add-employee-modal__discard-desc {
+  font-size: 13.5px;
+  color: var(--color-text-muted);
+  line-height: 1.4;
+}
+
+.add-employee-modal__discard-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.add-employee-modal__discard-btn {
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  transition: all var(--transition-fast);
+}
+
+.add-employee-modal__discard-btn--confirm {
+  background-color: var(--color-danger);
+  color: var(--color-text-white);
+}
+
+.add-employee-modal__discard-btn--confirm:hover {
+  background-color: #DC2626;
+}
+
+.add-employee-modal__discard-btn--keep {
+  background-color: var(--color-input-bg);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-main);
+}
+
+.add-employee-modal__discard-btn--keep:hover {
+  background-color: var(--color-surface);
+}

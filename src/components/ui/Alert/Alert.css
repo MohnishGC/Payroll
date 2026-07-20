@@ -1,0 +1,51 @@
+.alert {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  font-size: 13.5px;
+  font-weight: 500;
+  line-height: 1.4;
+  width: 100%;
+}
+
+.alert--error {
+  background-color: var(--color-error-bg);
+  border: 1px solid var(--color-error-border);
+  color: var(--color-error);
+}
+
+.alert--success {
+  background-color: var(--color-success-bg);
+  border: 1px solid var(--color-success-border);
+  color: #065F46;
+}
+
+.alert--warning {
+  background-color: #FEF3C7;
+  border: 1px solid #FDE68A;
+  color: #92400E;
+}
+
+.alert__icon {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.alert__message {
+  flex: 1;
+}
+
+.alert__close {
+  font-size: 18px;
+  line-height: 1;
+  color: currentColor;
+  opacity: 0.7;
+  padding: 0 4px;
+}
+
+.alert__close:hover {
+  opacity: 1;
+}

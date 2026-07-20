@@ -1,0 +1,193 @@
+.form-tab-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+}
+
+.form-tab-container__avatar-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.form-tab-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.form-tab-section__title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text-heading);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.form-tab-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  width: 100%;
+}
+
+@media (max-width: 640px) {
+  .form-tab-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.form-field--span-2 {
+  grid-column: span 2;
+}
+
+@media (max-width: 640px) {
+  .form-field--span-2 {
+    grid-column: span 1;
+  }
+}
+
+.form-field__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-heading);
+}
+
+.form-field__header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.form-field__checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--color-primary);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.form-field__select {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: var(--radius-lg);
+  border: 1.5px solid var(--color-border);
+  background-color: var(--color-input-bg);
+  font-size: 14px;
+  color: var(--color-text-main);
+  outline: none;
+  transition: all var(--transition-fast);
+}
+
+.form-field__select:focus {
+  border-color: var(--color-primary);
+  background-color: var(--color-surface);
+}
+
+.form-field__select--error {
+  border-color: var(--color-error);
+  background-color: var(--color-error-bg);
+}
+
+.form-field__error-msg {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-error);
+}
+
+.form-field__toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.form-field__toggle-btn {
+  padding: 6px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-input-bg);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-main);
+  cursor: pointer;
+}
+
+.form-field__toggle-btn--active {
+  background-color: var(--color-primary-bg);
+  border-color: #BFDBFE;
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+/* Education Card */
+.education-card {
+  padding: 20px;
+  border-radius: var(--radius-xl);
+  background-color: var(--color-input-bg);
+  border: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.education-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.education-card__badge {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-primary);
+  background-color: var(--color-primary-bg);
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.education-card__remove-btn {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.education-card__remove-btn:hover {
+  color: var(--color-danger);
+}
+
+.education-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-radius: var(--radius-lg);
+  border: 2px dashed var(--color-primary-light);
+  background-color: var(--color-primary-bg);
+  color: var(--color-primary);
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  align-self: flex-start;
+  transition: all var(--transition-fast);
+}
+
+.education-add-btn:hover {
+  background-color: var(--color-primary);
+  color: var(--color-text-white);
+  border-color: var(--color-primary);
+}

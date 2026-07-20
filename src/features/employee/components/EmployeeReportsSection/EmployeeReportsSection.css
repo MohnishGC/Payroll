@@ -1,0 +1,40 @@
+.employee-reports-section {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-shadow: var(--shadow-card);
+  width: 100%;
+}
+
+.employee-reports-section__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.employee-reports-section__title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.employee-reports-section__title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text-heading);
+}
+
+.employee-reports-section__info-icon {
+  color: var(--color-text-light);
+  display: flex;
+  align-items: center;
+  cursor: help;
+}
+
+.employee-reports-section__content {
+  padding-top: 4px;
+}
