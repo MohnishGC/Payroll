@@ -10,6 +10,19 @@ export interface AccountDetailsFormTabProps {
   disabled?: boolean;
 }
 
+const BANK_LIST = [
+  { name: 'State Bank of India', ifsc: 'SBIN0000301' },
+  { name: 'HDFC Bank', ifsc: 'HDFC0000060' },
+  { name: 'ICICI Bank', ifsc: 'ICIC0000007' },
+  { name: 'Axis Bank', ifsc: 'UTIB0000007' },
+  { name: 'Punjab National Bank', ifsc: 'PUNB0000100' },
+  { name: 'Bank of Baroda', ifsc: 'BARB0COLABA' },
+  { name: 'Chase National Bank', ifsc: 'CHAS0001298' },
+  { name: 'Bank of America', ifsc: 'BOFA0004412' },
+  { name: 'Wells Fargo', ifsc: 'WFBI0008890' },
+  { name: 'National Bank', ifsc: 'NATB0001000' }
+];
+
 export const AccountDetailsFormTab: React.FC<AccountDetailsFormTabProps> = ({
   values,
   errors,
@@ -22,17 +35,42 @@ export const AccountDetailsFormTab: React.FC<AccountDetailsFormTabProps> = ({
       <div className="form-tab-section">
         <h3 className="form-tab-section__title">Banking & Account Info</h3>
         <div className="form-tab-grid">
-          {/* Bank Name */}
-          <Input
-            id="field-bankName"
-            label="Bank Name *"
-            placeholder="e.g. Chase National Bank"
-            value={values.bankName}
-            onChange={(e) => onChange('bankName', e.target.value)}
-            error={errors.bankName}
-            disabled={disabled}
-            required
-          />
+          {/* Bank Name Dropdown */}
+          <div className="form-field">
+            <label className="form-field__label" htmlFor="field-bankName">
+              Bank Name *
+            </label>
+            <select
+              id="field-bankName"
+              className={`form-field__select ${errors.bankName ? 'form-field__select--error' : ''}`}
+              value={values.bankName}
+              onChange={(e) => {
+                const selectedBank = e.target.value;
+                onChange('bankName', selectedBank);
+                // Auto fill IFSC
+                const bank = BANK_LIST.find((b) => b.name === selectedBank);
+                if (bank) {
+                  onChange('ifscCode', bank.ifsc);
+                } else {
+                  onChange('ifscCode', '');
+                }
+              }}
+              disabled={disabled}
+              required
+            >
+              <option value="">-- Select Bank --</option>
+              {BANK_LIST.map((bank) => (
+                <option key={bank.name} value={bank.name}>
+                  {bank.name}
+                </option>
+              ))}
+            </select>
+            {errors.bankName && (
+              <span className="form-field__error" style={{ color: 'var(--color-error)', fontSize: '11px', marginTop: '4px', display: 'block' }}>
+                {errors.bankName}
+              </span>
+            )}
+          </div>
 
           {/* Account Holder Name */}
           <Input
@@ -50,23 +88,26 @@ export const AccountDetailsFormTab: React.FC<AccountDetailsFormTabProps> = ({
           <Input
             id="field-accountNumber"
             label="Account Number *"
-            placeholder="XXXX-XXXX-1234"
+            placeholder="9 to 18 digits (numeric only)"
             value={values.accountNumber}
-            onChange={(e) => onChange('accountNumber', e.target.value)}
+            onChange={(e) => {
+              const val = e.target.value.replace(/\D/g, '').slice(0, 18);
+              onChange('accountNumber', val);
+            }}
             error={errors.accountNumber}
             disabled={disabled}
             required
           />
 
-          {/* IFSC Code */}
+          {/* IFSC Code (Auto-filled & Disabled) */}
           <Input
             id="field-ifscCode"
             label="IFSC / Routing Code *"
-            placeholder="CHAS0001298"
+            placeholder="Auto-filled on selecting bank"
             value={values.ifscCode}
             onChange={(e) => onChange('ifscCode', e.target.value.toUpperCase())}
             error={errors.ifscCode}
-            disabled={disabled}
+            disabled={true}
             required
           />
 
@@ -103,7 +144,11 @@ export const AccountDetailsFormTab: React.FC<AccountDetailsFormTabProps> = ({
               <button
                 type="button"
                 className={`form-field__toggle-btn ${!values.pfApplicable ? 'form-field__toggle-btn--active' : ''}`}
-                onClick={() => onChange('pfApplicable', false)}
+                onClick={() => {
+                  onChange('pfApplicable', false);
+                  onChange('uanNumber', '');
+                  onChange('pfNumber', '');
+                }}
                 disabled={disabled}
               >
                 No
@@ -126,7 +171,10 @@ export const AccountDetailsFormTab: React.FC<AccountDetailsFormTabProps> = ({
               <button
                 type="button"
                 className={`form-field__toggle-btn ${!values.esiApplicable ? 'form-field__toggle-btn--active' : ''}`}
-                onClick={() => onChange('esiApplicable', false)}
+                onClick={() => {
+                  onChange('esiApplicable', false);
+                  onChange('esiNumber', '');
+                }}
                 disabled={disabled}
               >
                 No
@@ -134,15 +182,37 @@ export const AccountDetailsFormTab: React.FC<AccountDetailsFormTabProps> = ({
             </div>
           </div>
 
-          {/* UAN/PF Number */}
+          {/* UAN */}
           {values.pfApplicable && (
             <Input
-              id="field-uanPfNumber"
-              label="UAN / PF Number"
-              placeholder="100982348123"
-              value={values.uanPfNumber}
-              onChange={(e) => onChange('uanPfNumber', e.target.value)}
+              id="field-uan"
+              label="UAN *"
+              placeholder="12 digits (numeric only)"
+              value={values.uanNumber}
+              onChange={(e) => {
+                const val = e.target.value.replace(/\D/g, '').slice(0, 12);
+                onChange('uanNumber', val);
+              }}
+              error={errors.uanNumber}
               disabled={disabled}
+              required
+            />
+          )}
+
+          {/* PF Account Number */}
+          {values.pfApplicable && (
+            <Input
+              id="field-pfNumber"
+              label="PF Account Number *"
+              placeholder="22 characters (alphanumeric)"
+              value={values.pfNumber}
+              onChange={(e) => {
+                const val = e.target.value.replace(/[^a-zA-Z0-9]/g, '').slice(0, 22).toUpperCase();
+                onChange('pfNumber', val);
+              }}
+              error={errors.pfNumber}
+              disabled={disabled}
+              required
             />
           )}
 
@@ -150,11 +220,16 @@ export const AccountDetailsFormTab: React.FC<AccountDetailsFormTabProps> = ({
           {values.esiApplicable && (
             <Input
               id="field-esiNumber"
-              label="ESI Number"
-              placeholder="3100982312"
+              label="ESI Number *"
+              placeholder="10 digits (numeric only)"
               value={values.esiNumber}
-              onChange={(e) => onChange('esiNumber', e.target.value)}
+              onChange={(e) => {
+                const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                onChange('esiNumber', val);
+              }}
+              error={errors.esiNumber}
               disabled={disabled}
+              required
             />
           )}
         </div>

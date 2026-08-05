@@ -4,12 +4,14 @@ import './FileUpload.css';
 
 export interface UploadedFileItem {
   id: string;
-  file: File;
+  file?: File;
   name: string;
   size: number;
   docType: string;
   progress: number;
   status: 'uploading' | 'completed' | 'error';
+  fileUrl?: string;
+  uploadedDate?: string;
 }
 
 export interface FileUploadProps {

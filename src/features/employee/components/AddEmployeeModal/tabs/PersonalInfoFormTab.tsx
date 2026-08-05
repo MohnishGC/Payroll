@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Input } from '../../../../../components/ui/Input/Input';
 import { AvatarUpload } from '../../../../../components/ui/AvatarUpload/AvatarUpload';
 import type { PersonalInfoFormValues } from '../../../validation/personalInfoSchema';
-import { useImageUpload } from '../../../hooks/useImageUpload';
+import { useSecureImage } from '../../../hooks/useSecureImage';
+import { employeeApi } from '../../../services/employeeApi';
 import './FormTabCommon.css';
 
 export interface PersonalInfoFormTabProps {
@@ -12,43 +13,49 @@ export interface PersonalInfoFormTabProps {
   disabled?: boolean;
 }
 
-const DEPARTMENTS = ['Engineering', 'HR & Operations', 'Finance & Tax'];
-const DESIGNATION_MAP: Record<string, string[]> = {
-  Engineering: ['Senior Software Engineer', 'Lead React Developer', 'QA Automation Engineer', 'DevOps Specialist'],
-  'HR & Operations': ['Talent Acquisition Manager', 'HR Operations Executive', 'Office Administrator'],
-  'Finance & Tax': ['Senior Accountant', 'Payroll Specialist', 'Tax Compliance Officer'],
-};
-
 export const PersonalInfoFormTab: React.FC<PersonalInfoFormTabProps> = ({
   values,
   errors,
   onChange,
   disabled = false,
 }) => {
-  const { previewUrl, selectImage, removeImage } = useImageUpload(values.avatarUrl);
+  const { src: securePreviewUrl } = useSecureImage(values.avatarUrl);
+  const [departmentsList, setDepartmentsList] = useState<string[]>([]);
+  const [designationsList, setDesignationsList] = useState<string[]>([]);
+
+  useEffect(() => {
+    employeeApi.getDepartments()
+      .then((depts) => setDepartmentsList(depts))
+      .catch((err) => console.error('Failed to load departments:', err));
+  }, []);
+
+  useEffect(() => {
+    if (values.department && values.department !== '-- Select --') {
+      employeeApi.getDesignations(values.department)
+        .then((desigs) => setDesignationsList(desigs))
+        .catch((err) => console.error('Failed to load designations:', err));
+    } else {
+      setDesignationsList([]);
+    }
+  }, [values.department]);
 
   const handleAvatarSelect = (file: File) => {
-    selectImage(file);
+    // Show a temporary local blob preview immediately
     onChange('avatarFile', file);
     onChange('avatarUrl', URL.createObjectURL(file));
   };
 
   const handleAvatarRemove = () => {
-    removeImage();
     onChange('avatarFile', null);
     onChange('avatarUrl', undefined);
   };
-
-  const designations = values.department && DESIGNATION_MAP[values.department]
-    ? DESIGNATION_MAP[values.department]
-    : ['Senior Specialist', 'Lead Specialist', 'Associate Specialist'];
 
   return (
     <div className="form-tab-container">
       {/* Top Avatar Upload */}
       <div className="form-tab-container__avatar-wrapper">
         <AvatarUpload
-          previewUrl={previewUrl}
+          previewUrl={securePreviewUrl || undefined}
           nameFallback={values.name || 'New Employee'}
           onFileSelect={handleAvatarSelect}
           onRemove={handleAvatarRemove}
@@ -139,6 +146,23 @@ export const PersonalInfoFormTab: React.FC<PersonalInfoFormTabProps> = ({
               <option value="AB-">AB-</option>
             </select>
           </div>
+
+          {/* Needs Payroll Login */}
+          <div className="form-field form-field--span-2" style={{ marginTop: '4px' }}>
+            <label className="form-field__checkbox-label" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+              <input
+                id="field-needsPayrollLogin"
+                type="checkbox"
+                checked={values.needsPayrollLogin}
+                onChange={(e) => onChange('needsPayrollLogin', e.target.checked)}
+                disabled={disabled}
+                style={{ width: '16px', height: '16px' }}
+              />
+              <span style={{ fontSize: '13.5px', fontWeight: 600, color: 'var(--color-text-heading)' }}>
+                Enable Payroll login account access for this employee
+              </span>
+            </label>
+          </div>
         </div>
       </div>
 
@@ -150,10 +174,13 @@ export const PersonalInfoFormTab: React.FC<PersonalInfoFormTabProps> = ({
           <Input
             id="field-phone"
             label="Phone Number *"
-            placeholder="+1 (555) 000-0000"
+            placeholder="10 digits (numeric only)"
             iconName="user"
             value={values.phone}
-            onChange={(e) => onChange('phone', e.target.value)}
+            onChange={(e) => {
+              const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+              onChange('phone', val);
+            }}
             error={errors.phone}
             disabled={disabled}
             required
@@ -228,9 +255,13 @@ export const PersonalInfoFormTab: React.FC<PersonalInfoFormTabProps> = ({
           <Input
             id="field-emergencyPhone"
             label="Emergency Contact Phone"
-            placeholder="+1 (555) 999-8888"
+            placeholder="10 digits (numeric only)"
             value={values.emergencyContactPhone}
-            onChange={(e) => onChange('emergencyContactPhone', e.target.value)}
+            onChange={(e) => {
+              const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+              onChange('emergencyContactPhone', val);
+            }}
+            error={errors.emergencyContactPhone}
             disabled={disabled}
           />
         </div>
@@ -254,7 +285,7 @@ export const PersonalInfoFormTab: React.FC<PersonalInfoFormTabProps> = ({
               disabled={disabled}
             >
               <option value="-- Select --">-- Select Department --</option>
-              {DEPARTMENTS.map((dept) => (
+              {departmentsList.map((dept) => (
                 <option key={dept} value={dept}>{dept}</option>
               ))}
             </select>
@@ -272,7 +303,7 @@ export const PersonalInfoFormTab: React.FC<PersonalInfoFormTabProps> = ({
               disabled={disabled}
             >
               <option value="-- Select --">-- Select Designation --</option>
-              {designations.map((desig) => (
+              {designationsList.map((desig) => (
                 <option key={desig} value={desig}>{desig}</option>
               ))}
             </select>

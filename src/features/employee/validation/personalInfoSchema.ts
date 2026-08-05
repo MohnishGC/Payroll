@@ -16,6 +16,7 @@ export interface PersonalInfoFormValues {
   joinedDate: string;
   avatarUrl?: string;
   avatarFile?: File | null;
+  needsPayrollLogin: boolean;
 }
 
 export const validatePersonalInfo = (
@@ -37,6 +38,12 @@ export const validatePersonalInfo = (
 
   if (!values.phone?.trim()) {
     errors.phone = 'Phone Number is required.';
+  } else if (!/^\d{10}$/.test(values.phone)) {
+    errors.phone = 'Phone Number must be exactly 10 digits.';
+  }
+
+  if (values.emergencyContactPhone && !/^\d{10}$/.test(values.emergencyContactPhone)) {
+    errors.emergencyContactPhone = 'Emergency Contact Phone must be exactly 10 digits.';
   }
 
   if (!values.email?.trim()) {

@@ -99,7 +99,7 @@ export const EmployeeSearchModal: React.FC<EmployeeSearchModalProps> = ({
               value={department}
               onChange={(e) => setDepartment(e.target.value)}
             >
-              <option value="-- Select --">-- Select Department --</option>
+              <option value="0">-- Select Department --</option>
               <option value="Engineering">Engineering</option>
               <option value="HR & Operations">HR & Operations</option>
               <option value="Finance & Tax">Finance & Tax</option>

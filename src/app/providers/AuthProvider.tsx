@@ -1,35 +1,51 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import type { AuthUser } from '../../features/auth/types/auth.types';
+import { USE_MOCK_API } from '../../constants/config';
 
 interface AuthContextType {
   isAuthenticated: boolean;
   user: AuthUser | null;
-  login: (user: AuthUser) => void;
+  login: (user: AuthUser, token: string) => void;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const AUTH_STORAGE_KEY = 'timee_pms_auth_user';
+const JWT_STORAGE_KEY = 'timee_pms_jwt_token';
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<AuthUser | null>(() => {
     try {
       const savedUser = localStorage.getItem(AUTH_STORAGE_KEY);
-      return savedUser ? JSON.parse(savedUser) : {
-        id: 'usr-101',
-        username: 'arnold.smith',
-        name: 'Arnold Smith',
-        role: 'Payroll Administrator',
-      };
+      if (savedUser) {
+        return JSON.parse(savedUser);
+      }
+      
+      // If mock API is enabled, fallback to default mock user for offline convenience
+      if (USE_MOCK_API) {
+        return {
+          id: 'usr-101',
+          username: 'arnold.smith',
+          name: 'Arnold Smith',
+          role: 'Payroll Administrator',
+        };
+      }
+      return null;
     } catch {
       return null;
     }
   });
 
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
-    return Boolean(localStorage.getItem(AUTH_STORAGE_KEY) || true); // Default active for convenience, controllable via login/logout
+    const hasToken = Boolean(localStorage.getItem(JWT_STORAGE_KEY));
+    if (hasToken) return true;
+    
+    // In mock API mode, assume authenticated if mock mode is on and no explicit logout happened
+    if (USE_MOCK_API) return true;
+    
+    return false;
   });
 
   useEffect(() => {
@@ -38,11 +54,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setIsAuthenticated(true);
     } else {
       localStorage.removeItem(AUTH_STORAGE_KEY);
+      localStorage.removeItem(JWT_STORAGE_KEY);
       setIsAuthenticated(false);
     }
   }, [user]);
 
-  const login = (userData: AuthUser) => {
+  const login = (userData: AuthUser, token: string) => {
+    localStorage.setItem(JWT_STORAGE_KEY, token);
+    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(userData));
     setUser(userData);
     setIsAuthenticated(true);
   };
@@ -51,6 +70,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUser(null);
     setIsAuthenticated(false);
     localStorage.removeItem(AUTH_STORAGE_KEY);
+    localStorage.removeItem(JWT_STORAGE_KEY);
   };
 
   return (

@@ -7,6 +7,7 @@ export interface AddEmployeeModalHeaderProps {
   isGeneratingCode: boolean;
   codeError: string | null;
   onRetryCode: () => void;
+  title?: string;
 }
 
 export const AddEmployeeModalHeader: React.FC<AddEmployeeModalHeaderProps> = ({
@@ -14,11 +15,12 @@ export const AddEmployeeModalHeader: React.FC<AddEmployeeModalHeaderProps> = ({
   isGeneratingCode,
   codeError,
   onRetryCode,
+  title = 'Add New Employee',
 }) => {
   return (
     <div className="add-employee-modal-header">
       <div className="add-employee-modal-header__title-group">
-        <h2 className="add-employee-modal-header__title">Add New Employee</h2>
+        <h2 className="add-employee-modal-header__title">{title}</h2>
 
         {/* Employee Code Readonly Pill */}
         <div className="add-employee-modal-header__code-pill" title="System-generated Employee Code">

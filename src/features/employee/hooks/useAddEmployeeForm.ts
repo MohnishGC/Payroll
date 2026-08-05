@@ -9,7 +9,15 @@ import type { EmployeeMaster } from '../types/employee.types';
 
 export type TabKey = 'personal' | 'account' | 'education' | 'documents';
 
+const generateGuid = () => {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+  });
+};
+
 export interface AddEmployeeFormValues {
+  id: string;
   personal: PersonalInfoFormValues;
   account: AccountDetailsFormValues;
   education: EducationFormEntry[];
@@ -17,6 +25,7 @@ export interface AddEmployeeFormValues {
 }
 
 const initialValues: AddEmployeeFormValues = {
+  id: '',
   personal: {
     name: '',
     gender: '-- Select --',
@@ -35,6 +44,7 @@ const initialValues: AddEmployeeFormValues = {
     joinedDate: new Date().toISOString().split('T')[0],
     avatarUrl: undefined,
     avatarFile: null,
+    needsPayrollLogin: false,
   },
   account: {
     bankName: '',
@@ -42,7 +52,8 @@ const initialValues: AddEmployeeFormValues = {
     accountNumber: '',
     ifscCode: '',
     panNumber: '',
-    uanPfNumber: '',
+    uanNumber: '',
+    pfNumber: '',
     esiNumber: '',
     pfApplicable: true,
     esiApplicable: true,
@@ -61,7 +72,10 @@ const initialValues: AddEmployeeFormValues = {
 };
 
 export const useAddEmployeeForm = () => {
-  const [values, setValues] = useState<AddEmployeeFormValues>(initialValues);
+  const [values, setValues] = useState<AddEmployeeFormValues>(() => ({
+    ...initialValues,
+    id: generateGuid(),
+  }));
   const [touchedTabs, setTouchedTabs] = useState<Record<TabKey, boolean>>({
     personal: false,
     account: false,
@@ -70,6 +84,9 @@ export const useAddEmployeeForm = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const [isUploadingFile, setIsUploadingFile] = useState<boolean>(false);
+  const [uploadMessage, setUploadMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   // Per-tab error objects
   const errors = useMemo(() => {
@@ -152,14 +169,120 @@ export const useAddEmployeeForm = () => {
     setValues((prev) => ({ ...prev, documents: newList }));
   }, []);
 
+  const uploadAvatarFile = useCallback(async (file: File) => {
+    setValues((prev) => ({
+      ...prev,
+      personal: {
+        ...prev.personal,
+        avatarUrl: URL.createObjectURL(file),
+        avatarFile: file,
+      },
+    }));
+  }, []);
+
+  const uploadDocumentFiles = useCallback(async (newFiles: File[]) => {
+    const newItems: UploadedFileItem[] = newFiles.map((file, i) => ({
+      id: `file-local-${Date.now()}-${i}`,
+      file,
+      name: file.name,
+      size: file.size,
+      docType: 'ID Proof',
+      progress: 100,
+      status: 'completed',
+    }));
+
+    setValues((prev) => ({
+      ...prev,
+      documents: [...prev.documents, ...newItems],
+    }));
+  }, []);
+
   const resetForm = useCallback(() => {
-    setValues(initialValues);
+    setValues({
+      ...initialValues,
+      id: generateGuid(),
+    });
     setTouchedTabs({ personal: false, account: false, education: false, documents: false });
     setIsSubmitting(false);
     setSubmitError(null);
+    setUploadMessage(null);
+    setIsUploadingFile(false);
   }, []);
 
-  // Validate all tabs, return first invalid tab key if any
+  const populateForm = useCallback((employee: EmployeeMaster) => {
+    setValues({
+      id: employee.id || (employee as any).Id || generateGuid(),
+      personal: {
+        name: employee.name,
+        gender: employee.personal?.gender || 'Male',
+        dob: employee.personal?.dob || '',
+        maritalStatus: employee.personal?.maritalStatus || 'Single',
+        bloodGroup: employee.personal?.bloodGroup || 'O+',
+        phone: employee.phone,
+        email: employee.email,
+        presentAddress: employee.personal?.address || '',
+        permanentAddress: employee.personal?.address || '',
+        sameAsPresent: true,
+        emergencyContactName: employee.personal?.emergencyContactName || '',
+        emergencyContactPhone: employee.personal?.emergencyContactPhone || '',
+        department: employee.department,
+        designation: employee.designation,
+        joinedDate: employee.joinedDate,
+        avatarUrl: employee.avatarUrl || (employee as any).AvatarUrl,
+        avatarFile: null,
+        needsPayrollLogin: employee.needsPayrollLogin || false,
+      },
+      account: {
+        bankName: employee.account?.bankName || '',
+        accountHolderName: employee.name,
+        accountNumber: employee.account?.accountNumber || '',
+        ifscCode: employee.account?.ifscCode || '',
+        panNumber: employee.account?.panNumber || '',
+        uanNumber: employee.account?.uanNumber || (employee.account as any)?.UanNumber || (employee.account as any)?.uan || (employee.account as any)?.Uan || '',
+        pfNumber: employee.account?.pfNumber || (employee.account as any)?.PfNumber || '',
+        esiNumber: employee.account?.esiNumber || (employee.account as any)?.EsiNumber || '',
+        pfApplicable: Boolean(
+          employee.account?.uanNumber ||
+          (employee.account as any)?.UanNumber ||
+          (employee.account as any)?.uan ||
+          (employee.account as any)?.Uan ||
+          employee.account?.pfNumber ||
+          (employee.account as any)?.PfNumber
+        ),
+        esiApplicable: Boolean(employee.account?.esiNumber),
+      },
+      education: employee.educations?.length > 0
+        ? employee.educations.map((edu) => ({
+            id: edu.id,
+            qualification: edu.qualification,
+            institution: edu.institution,
+            boardUniversity: '',
+            yearOfPassing: edu.yearOfPassing,
+            percentageCgpa: '',
+          }))
+        : initialValues.education,
+      documents: employee.documents?.length > 0
+        ? employee.documents.map((doc) => ({
+            id: doc.id,
+            file: new File([], doc.name),
+            name: doc.name,
+            size: 0,
+            docType: doc.type,
+            progress: 100,
+            status: 'completed',
+            fileUrl: doc.fileUrl,
+          }))
+        : [],
+    });
+
+    setTouchedTabs({
+      personal: true,
+      account: true,
+      education: employee.educations?.length > 0,
+      documents: employee.documents?.length > 0,
+    });
+  }, []);
+
   const validateAll = useCallback((): { isValid: boolean; firstInvalidTab: TabKey | null } => {
     setTouchedTabs({ personal: true, account: true, education: true, documents: true });
 
@@ -176,6 +299,47 @@ export const useAddEmployeeForm = () => {
     return { isValid: true, firstInvalidTab: null };
   }, [values]);
 
+  const uploadFormFiles = async (
+    currentId: string,
+    avatarFile?: File | null,
+    avatarUrl?: string,
+    docs: UploadedFileItem[] = []
+  ): Promise<{ finalAvatarUrl?: string; finalDocs: any[] }> => {
+    // 1. Upload avatar if a new local File exists
+    let finalAvatarUrl = avatarUrl;
+    if (avatarFile) {
+      const res = await employeeApi.uploadFile(avatarFile, 'avatars', currentId);
+      finalAvatarUrl = res.fileUrl;
+    }
+
+    // 2. Upload any local documents that have a local File reference
+    const finalDocs = [];
+    for (const doc of docs) {
+      if (doc.file) {
+        // Upload locally pending file
+        const res = await employeeApi.uploadFile(doc.file, 'documents', currentId, doc.docType);
+        finalDocs.push({
+          id: doc.id.startsWith('file-local-') ? undefined : doc.id,
+          name: doc.name,
+          type: doc.docType,
+          fileUrl: res.fileUrl,
+          uploadedDate: new Date().toISOString().split('T')[0],
+        });
+      } else {
+        // Already uploaded document path reference
+        finalDocs.push({
+          id: doc.id,
+          name: doc.name,
+          type: doc.docType,
+          fileUrl: doc.fileUrl || '',
+          uploadedDate: doc.uploadedDate || new Date().toISOString().split('T')[0],
+        });
+      }
+    }
+
+    return { finalAvatarUrl, finalDocs };
+  };
+
   const submitForm = useCallback(
     async (assignedCode: string): Promise<EmployeeMaster | null> => {
       const { isValid, firstInvalidTab } = validateAll();
@@ -187,7 +351,15 @@ export const useAddEmployeeForm = () => {
       setIsSubmitting(true);
       setSubmitError(null);
       try {
+        const { finalAvatarUrl, finalDocs } = await uploadFormFiles(
+          values.id,
+          values.personal.avatarFile,
+          values.personal.avatarUrl,
+          values.documents
+        );
+
         const payload: Partial<EmployeeMaster> = {
+          id: values.id,
           code: assignedCode || 'EMP-1004',
           name: values.personal.name,
           joinedDate: values.personal.joinedDate,
@@ -195,7 +367,8 @@ export const useAddEmployeeForm = () => {
           department: values.personal.department,
           designation: values.personal.designation,
           phone: values.personal.phone,
-          avatarUrl: values.personal.avatarUrl,
+          avatarUrl: finalAvatarUrl,
+          needsPayrollLogin: values.personal.needsPayrollLogin,
           personal: {
             dob: values.personal.dob,
             gender: values.personal.gender as 'Male' | 'Female' | 'Other',
@@ -210,7 +383,8 @@ export const useAddEmployeeForm = () => {
             accountNumber: values.account.accountNumber,
             ifscCode: values.account.ifscCode,
             panNumber: values.account.panNumber,
-            uanPfNumber: values.account.uanPfNumber,
+            uanNumber: values.account.uanNumber,
+            pfNumber: values.account.pfNumber,
             esiNumber: values.account.esiNumber,
           },
           educations: values.education.map((e) => ({
@@ -219,12 +393,7 @@ export const useAddEmployeeForm = () => {
             institution: e.institution,
             yearOfPassing: e.yearOfPassing,
           })),
-          documents: values.documents.map((d) => ({
-            id: d.id,
-            name: d.name,
-            type: d.docType,
-            uploadedDate: new Date().toISOString().split('T')[0],
-          })),
+          documents: finalDocs,
         };
 
         const created = await employeeApi.create(payload);
@@ -232,6 +401,74 @@ export const useAddEmployeeForm = () => {
         return created;
       } catch (err) {
         setSubmitError((err as Error).message || 'Failed to submit employee creation form.');
+        return null;
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [validateAll, values, resetForm]
+  );
+
+  const updateForm = useCallback(
+    async (id: string, code: string): Promise<EmployeeMaster | null> => {
+      const { isValid, firstInvalidTab } = validateAll();
+      if (!isValid && firstInvalidTab) {
+        setSubmitError(`Please correct the errors in the ${firstInvalidTab.toUpperCase()} tab.`);
+        return null;
+      }
+
+      setIsSubmitting(true);
+      setSubmitError(null);
+      try {
+        const { finalAvatarUrl, finalDocs } = await uploadFormFiles(
+          id,
+          values.personal.avatarFile,
+          values.personal.avatarUrl,
+          values.documents
+        );
+
+        const payload: Partial<EmployeeMaster> = {
+          code: code,
+          name: values.personal.name,
+          joinedDate: values.personal.joinedDate,
+          email: values.personal.email,
+          department: values.personal.department,
+          designation: values.personal.designation,
+          phone: values.personal.phone,
+          avatarUrl: finalAvatarUrl,
+          needsPayrollLogin: values.personal.needsPayrollLogin,
+          personal: {
+            dob: values.personal.dob,
+            gender: values.personal.gender as 'Male' | 'Female' | 'Other',
+            maritalStatus: values.personal.maritalStatus as 'Single' | 'Married' | 'Divorced',
+            bloodGroup: values.personal.bloodGroup,
+            address: values.personal.presentAddress,
+            emergencyContactName: values.personal.emergencyContactName,
+            emergencyContactPhone: values.personal.emergencyContactPhone,
+          },
+          account: {
+            bankName: values.account.bankName,
+            accountNumber: values.account.accountNumber,
+            ifscCode: values.account.ifscCode,
+            panNumber: values.account.panNumber,
+            uanNumber: values.account.uanNumber,
+            pfNumber: values.account.pfNumber,
+            esiNumber: values.account.esiNumber,
+          },
+          educations: values.education.map((e) => ({
+            id: e.id,
+            qualification: e.qualification,
+            institution: e.institution,
+            yearOfPassing: e.yearOfPassing,
+          })),
+          documents: finalDocs,
+        };
+
+        const updated = await employeeApi.update(id, payload);
+        resetForm();
+        return updated;
+      } catch (err) {
+        setSubmitError((err as Error).message || 'Failed to update employee record.');
         return null;
       } finally {
         setIsSubmitting(false);
@@ -248,12 +485,18 @@ export const useAddEmployeeForm = () => {
     isDirty,
     isSubmitting,
     submitError,
+    isUploadingFile,
+    uploadMessage,
     setPersonalField,
     setAccountField,
     setEducationList,
     setDocumentList,
+    uploadAvatarFile,
+    uploadDocumentFiles,
     resetForm,
+    populateForm,
     validateAll,
     submitForm,
+    updateForm,
   };
 };

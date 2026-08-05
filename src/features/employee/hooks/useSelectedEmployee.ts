@@ -5,14 +5,7 @@ import type { EmployeeMaster } from '../types/employee.types';
 export const useSelectedEmployee = () => {
   const [selectedEmployee, setSelectedEmployee] = useState<EmployeeMaster | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [isEditing, setIsEditing] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-
-  const selectEmployee = useCallback((employee: EmployeeMaster | null) => {
-    setSelectedEmployee(employee);
-    setIsEditing(false);
-    setError(null);
-  }, []);
 
   const loadEmployee = useCallback(async (idOrCode: string) => {
     if (!idOrCode.trim()) return;
@@ -32,59 +25,39 @@ export const useSelectedEmployee = () => {
     }
   }, []);
 
-  const saveEmployee = useCallback(
-    async (updatedFields: Partial<EmployeeMaster>): Promise<boolean> => {
-      if (!selectedEmployee) return false;
-      setIsLoading(true);
-      setError(null);
-      try {
-        const updated = await employeeApi.update(selectedEmployee.id, updatedFields);
-        setSelectedEmployee(updated);
-        setIsEditing(false);
-        return true;
-      } catch (err) {
-        setError((err as Error).message || 'Failed to save employee changes.');
-        return false;
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [selectedEmployee]
-  );
+  const selectEmployee = useCallback((employee: EmployeeMaster | null) => {
+    if (employee) {
+      const hasDetails = employee.personal && 
+        (employee.personal.dob || employee.personal.address);
 
-  const removeEmployee = useCallback(async (): Promise<boolean> => {
-    if (!selectedEmployee) return false;
-    setIsLoading(true);
-    setError(null);
-    try {
-      await employeeApi.delete(selectedEmployee.id);
+      if (hasDetails) {
+        setSelectedEmployee(employee);
+      } else {
+        const empId = employee.id || (employee as any).Id || employee.code || (employee as any).Code;
+        if (empId) {
+          loadEmployee(empId);
+        } else {
+          setSelectedEmployee(employee);
+        }
+      }
+    } else {
       setSelectedEmployee(null);
-      setIsEditing(false);
-      return true;
-    } catch (err) {
-      setError((err as Error).message || 'Failed to delete employee record.');
-      return false;
-    } finally {
-      setIsLoading(false);
     }
-  }, [selectedEmployee]);
+    setError(null);
+  }, [loadEmployee]);
 
   const clearSelectedEmployee = useCallback(() => {
     setSelectedEmployee(null);
-    setIsEditing(false);
     setError(null);
   }, []);
 
   return {
     selectedEmployee,
     isLoading,
-    isEditing,
-    setIsEditing,
     error,
     selectEmployee,
     loadEmployee,
-    saveEmployee,
-    removeEmployee,
     clearSelectedEmployee,
   };
 };
+export default useSelectedEmployee;

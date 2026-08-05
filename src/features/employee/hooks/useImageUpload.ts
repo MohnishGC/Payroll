@@ -17,13 +17,13 @@ export const useImageUpload = (initialUrl?: string | null) => {
     setPreviewUrl(null);
   }, []);
 
-  const uploadSelectedImage = useCallback(async (): Promise<string | null> => {
+  const uploadSelectedImage = useCallback(async (employeeId: string): Promise<string | null> => {
     if (!selectedFile) return previewUrl;
     setIsUploading(true);
     try {
-      const result = await employeeApi.uploadFile(selectedFile);
-      setPreviewUrl(result.url);
-      return result.url;
+      const result = await employeeApi.uploadFile(selectedFile, 'avatars', employeeId);
+      setPreviewUrl(result.fileUrl);
+      return result.fileUrl;
     } catch (err) {
       console.error('Image upload failed:', err);
       return previewUrl;
@@ -41,3 +41,4 @@ export const useImageUpload = (initialUrl?: string | null) => {
     uploadSelectedImage,
   };
 };
+export default useImageUpload;

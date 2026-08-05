@@ -6,6 +6,7 @@ export interface DocumentsFormTabProps {
   files: UploadedFileItem[];
   errors: Record<string, string>;
   onChangeFiles: (newList: UploadedFileItem[]) => void;
+  uploadDocumentFiles: (files: File[]) => Promise<void>;
   disabled?: boolean;
 }
 
@@ -13,19 +14,11 @@ export const DocumentsFormTab: React.FC<DocumentsFormTabProps> = ({
   files,
   errors,
   onChangeFiles,
+  uploadDocumentFiles,
   disabled = false,
 }) => {
   const handleAddFiles = (newRawFiles: File[]) => {
-    const newItems: UploadedFileItem[] = newRawFiles.map((file, i) => ({
-      id: `file-${Date.now()}-${i}`,
-      file,
-      name: file.name,
-      size: file.size,
-      docType: 'ID Proof',
-      progress: 100,
-      status: 'completed',
-    }));
-    onChangeFiles([...files, ...newItems]);
+    uploadDocumentFiles(newRawFiles);
   };
 
   const handleRemoveFile = (id: string) => {
@@ -55,3 +48,4 @@ export const DocumentsFormTab: React.FC<DocumentsFormTabProps> = ({
     </div>
   );
 };
+export default DocumentsFormTab;

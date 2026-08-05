@@ -13,12 +13,8 @@ export const EmployeeMasterPage: React.FC = () => {
   const {
     selectedEmployee,
     isLoading,
-    isEditing,
-    setIsEditing,
     error,
     selectEmployee,
-    saveEmployee,
-    removeEmployee,
     clearSelectedEmployee,
   } = useSelectedEmployee();
 
@@ -41,8 +37,8 @@ export const EmployeeMasterPage: React.FC = () => {
           onClick={() => setIsAddModalOpen(true)}
           className="employee-master-page__add-btn"
         >
-          <Icon name="plus" size={16} />
-          <span>Add New Employee</span>
+          <Icon name={selectedEmployee ? "key" : "plus"} size={16} />
+          <span>{selectedEmployee ? "Update Employee" : "Add New Employee"}</span>
         </Button>
       </div>
 
@@ -87,16 +83,10 @@ export const EmployeeMasterPage: React.FC = () => {
           <div className="employee-master-page__two-column-grid">
             <EmployeeBasicInfoCard
               employee={selectedEmployee}
-              isEditing={isEditing}
-              onToggleEdit={() => setIsEditing((prev) => !prev)}
-              onSave={saveEmployee}
-              onDelete={removeEmployee}
             />
 
             <EmployeeDetailTabs
               employee={selectedEmployee}
-              isEditing={isEditing}
-              onUpdate={saveEmployee}
             />
           </div>
 
@@ -112,6 +102,7 @@ export const EmployeeMasterPage: React.FC = () => {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onEmployeeCreated={(newEmp) => selectEmployee(newEmp)}
+        employeeToEdit={selectedEmployee}
       />
     </div>
   );

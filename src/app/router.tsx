@@ -15,11 +15,10 @@ import { DashboardPage } from '../features/dashboard/pages/DashboardPage';
 import { EmployeeMasterPage } from '../features/employee/pages/EmployeeMasterPage';
 import { EmployeeListPage } from '../features/employee/pages/EmployeeListPage';
 import { AddEmployeePage } from '../features/employee/pages/AddEmployeePage';
-import { DepartmentsPage } from '../features/employee/pages/DepartmentsPage';
-import { DesignationsPage } from '../features/employee/pages/DesignationsPage';
 import { DocumentsPage } from '../features/employee/pages/DocumentsPage';
-
 // Settings Pages
+import { DepartmentsPage } from '../features/settings/pages/DepartmentsPage';
+import { DesignationsPage } from '../features/settings/pages/DesignationsPage';
 import { UsersPage } from '../features/settings/pages/UsersPage';
 import { CitiesPage } from '../features/settings/pages/CitiesPage';
 import { BranchesPage } from '../features/settings/pages/BranchesPage';
@@ -48,14 +47,14 @@ export const AppRouter: React.FC = () => {
         <Route path="employee/master" element={<EmployeeMasterPage />} />
         <Route path="employee/list" element={<EmployeeListPage />} />
         <Route path="employee/add" element={<AddEmployeePage />} />
-        <Route path="employee/departments" element={<DepartmentsPage />} />
-        <Route path="employee/designations" element={<DesignationsPage />} />
         <Route path="employee/documents" element={<DocumentsPage />} />
 
         {/* Settings Submenu Routes */}
         <Route path="settings/users" element={<UsersPage />} />
         <Route path="settings/cities" element={<CitiesPage />} />
         <Route path="settings/branches" element={<BranchesPage />} />
+        <Route path="settings/departments" element={<DepartmentsPage />} />
+        <Route path="settings/designations" element={<DesignationsPage />} />
         <Route path="settings/financial-year" element={<FinancialYearPage />} />
         <Route path="settings/holidays" element={<HolidaysPage />} />
       </Route>

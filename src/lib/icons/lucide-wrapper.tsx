@@ -39,10 +39,12 @@ import {
   Filter,
   SlidersHorizontal,
   X,
+  Edit,
   type LucideProps
 } from 'lucide-react';
 
 export const LucideIcons = {
+  edit: Edit,
   user: User,
   lock: Lock,
   pieChart: PieChart,

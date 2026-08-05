@@ -6,12 +6,16 @@ export interface AddEmployeeModalFooterProps {
   onCancel: () => void;
   onSubmit: () => void;
   isSubmitting: boolean;
+  submitLabel?: string;
+  loadingText?: string;
 }
 
 export const AddEmployeeModalFooter: React.FC<AddEmployeeModalFooterProps> = ({
   onCancel,
   onSubmit,
   isSubmitting,
+  submitLabel = 'Create Employee',
+  loadingText = 'Creating Record...',
 }) => {
   return (
     <div className="add-employee-modal-footer">
@@ -30,9 +34,9 @@ export const AddEmployeeModalFooter: React.FC<AddEmployeeModalFooterProps> = ({
         variant="primary"
         onClick={onSubmit}
         isLoading={isSubmitting}
-        loadingText="Creating Record..."
+        loadingText={loadingText}
       >
-        Create Employee
+        {submitLabel}
       </Button>
     </div>
   );

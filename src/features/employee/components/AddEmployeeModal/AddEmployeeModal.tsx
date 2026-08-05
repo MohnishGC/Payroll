@@ -3,12 +3,10 @@ import { Modal } from '../../../../components/ui/Modal/Modal';
 import { Tabs } from '../../../../components/ui/Tabs/Tabs';
 import { AddEmployeeModalHeader } from './AddEmployeeModalHeader';
 import { AddEmployeeModalFooter } from './AddEmployeeModalFooter';
-import { addEmployeeTabsRegistry } from './formConfig/addEmployeeTabsRegistry';
 import { PersonalInfoFormTab } from './tabs/PersonalInfoFormTab';
 import { AccountDetailsFormTab } from './tabs/AccountDetailsFormTab';
 import { EducationFormTab } from './tabs/EducationFormTab';
 import { DocumentsFormTab } from './tabs/DocumentsFormTab';
-
 import { useEmployeeCodeGenerator } from '../../hooks/useEmployeeCodeGenerator';
 import { useAddEmployeeForm, type TabKey } from '../../hooks/useAddEmployeeForm';
 import type { EmployeeMaster } from '../../types/employee.types';
@@ -17,18 +15,19 @@ import './AddEmployeeModal.css';
 export interface AddEmployeeModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onEmployeeCreated: (newEmployee: EmployeeMaster) => void;
+  onEmployeeCreated: (newEmp: EmployeeMaster) => void;
+  employeeToEdit?: EmployeeMaster | null;
 }
 
 export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
   isOpen,
   onClose,
   onEmployeeCreated,
+  employeeToEdit,
 }) => {
   const [activeTabKey, setActiveTabKey] = useState<TabKey>('personal');
   const [showDiscardConfirm, setShowDiscardConfirm] = useState<boolean>(false);
 
-  // Hooks
   const {
     code,
     isLoading: isGeneratingCode,
@@ -43,26 +42,36 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
     isDirty,
     isSubmitting,
     submitError,
+    isUploadingFile,
+    uploadMessage,
     setPersonalField,
     setAccountField,
     setEducationList,
     setDocumentList,
+    uploadDocumentFiles,
     resetForm,
+    populateForm,
     validateAll,
     submitForm,
+    updateForm,
   } = useAddEmployeeForm();
 
-  // Fetch next employee code on modal open
+  // Fetch next employee code or pre-populate on modal open
   useEffect(() => {
     if (isOpen) {
-      fetchCode();
       setActiveTabKey('personal');
       setShowDiscardConfirm(false);
+      
+      if (employeeToEdit) {
+        populateForm(employeeToEdit);
+      } else {
+        fetchCode();
+      }
     }
-  }, [isOpen, fetchCode]);
+  }, [isOpen, employeeToEdit, fetchCode, populateForm]);
 
   const handleAttemptClose = () => {
-    if (isDirty) {
+    if (isDirty && !employeeToEdit) {
       setShowDiscardConfirm(true);
     } else {
       resetForm();
@@ -80,7 +89,6 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
     const { isValid, firstInvalidTab } = validateAll();
     if (!isValid && firstInvalidTab) {
       setActiveTabKey(firstInvalidTab);
-      // Auto-scroll to first invalid element
       setTimeout(() => {
         const firstErrorEl = document.querySelector('.form-field__error-msg, .input-group--error');
         if (firstErrorEl) {
@@ -90,38 +98,50 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
       return;
     }
 
-    const created = await submitForm(code);
-    if (created) {
-      onEmployeeCreated(created);
+    let result: EmployeeMaster | null = null;
+    if (employeeToEdit) {
+      result = await updateForm(employeeToEdit.id, employeeToEdit.code);
+    } else {
+      result = await submitForm(code);
+    }
+
+    if (result) {
+      onEmployeeCreated(result);
       onClose();
     }
   };
 
-  const tabItems = addEmployeeTabsRegistry.map((tab) => ({
-    key: tab.key,
-    label: tab.label,
-    status: tabStatuses[tab.key],
-  }));
+  const tabItems = [
+    { key: 'personal', label: 'Personal Details', status: tabStatuses.personal },
+    { key: 'account', label: 'Bank & Statutory', status: tabStatuses.account },
+    { key: 'education', label: 'Qualifications', status: tabStatuses.education },
+    { key: 'documents', label: 'Documents Attachment', status: tabStatuses.documents },
+  ];
+
+  const activeCode = employeeToEdit ? employeeToEdit.code : code;
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={handleAttemptClose}
-      size="xl"
       className="add-employee-modal"
+      size="lg"
       headerContent={
         <AddEmployeeModalHeader
-          code={code}
-          isGeneratingCode={isGeneratingCode}
-          codeError={codeError}
+          code={activeCode}
+          isGeneratingCode={!employeeToEdit && isGeneratingCode}
+          codeError={!employeeToEdit ? codeError : null}
           onRetryCode={fetchCode}
+          title={employeeToEdit ? 'Update Employee Details' : 'Add New Employee'}
         />
       }
       footer={
         <AddEmployeeModalFooter
           onCancel={handleAttemptClose}
           onSubmit={handleSubmit}
-          isSubmitting={isSubmitting}
+          isSubmitting={isSubmitting || isUploadingFile}
+          submitLabel={employeeToEdit ? 'Update Employee' : 'Create Employee'}
+          loadingText={isUploadingFile ? 'Uploading Files...' : (employeeToEdit ? 'Updating Record...' : 'Creating Record...')}
         />
       }
     >
@@ -135,10 +155,15 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
           />
         </div>
 
-        {/* Form Error Banner */}
-        {submitError && (
-          <div className="add-employee-modal__submit-error" role="alert">
-            <span>{submitError}</span>
+        {/* Form Error or Upload Notification Banner */}
+        {(submitError || uploadMessage) && (
+          <div
+            className={`add-employee-modal__submit-error ${
+              uploadMessage?.type === 'success' ? 'add-employee-modal__submit-error--success' : ''
+            }`}
+            role="alert"
+          >
+            <span>{submitError || uploadMessage?.text}</span>
           </div>
         )}
 
@@ -149,7 +174,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
               values={values.personal}
               errors={errors.personal}
               onChange={setPersonalField}
-              disabled={isSubmitting}
+              disabled={isSubmitting || isUploadingFile}
             />
           )}
 
@@ -158,7 +183,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
               values={values.account}
               errors={errors.account}
               onChange={setAccountField}
-              disabled={isSubmitting}
+              disabled={isSubmitting || isUploadingFile}
             />
           )}
 
@@ -167,7 +192,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
               entries={values.education}
               errors={errors.education}
               onChangeList={setEducationList}
-              disabled={isSubmitting}
+              disabled={isSubmitting || isUploadingFile}
             />
           )}
 
@@ -176,7 +201,8 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
               files={values.documents}
               errors={errors.documents}
               onChangeFiles={setDocumentList}
-              disabled={isSubmitting}
+              uploadDocumentFiles={uploadDocumentFiles}
+              disabled={isSubmitting || isUploadingFile}
             />
           )}
         </div>
@@ -212,3 +238,4 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
     </Modal>
   );
 };
+export default AddEmployeeModal;

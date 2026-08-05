@@ -25,7 +25,7 @@ export const GreetingBanner: React.FC = () => {
           marginBottom: '6px',
         }}
       >
-        Hallo, {userName}
+        Hello, {userName}
       </h1>
       <p
         style={{

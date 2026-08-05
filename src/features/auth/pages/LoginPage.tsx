@@ -9,12 +9,18 @@ import './LoginPage.css';
 
 export const LoginPage: React.FC = () => {
   const [view, setView] = useState<'login' | 'forgot-password'>('login');
-  const { login } = useAuth();
+  const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
+  React.useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
+
   const handleLoginSuccess = (response: AuthResponse) => {
-    if (response.user) {
-      login(response.user);
+    if (response.user && response.token) {
+      login(response.user, response.token);
       navigate('/dashboard');
     }
   };

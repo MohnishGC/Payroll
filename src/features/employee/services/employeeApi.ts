@@ -1,5 +1,6 @@
 import { USE_MOCK_API } from '../../../constants/config';
 import { httpClient } from '../../../lib/http/httpClient';
+import { settingsApi } from '../../settings/services/settingsApi';
 import type {
   EmployeeMaster,
   EmployeeSearchFilters,
@@ -19,6 +20,7 @@ const initialEmployees: EmployeeMaster[] = [
     designation: 'Senior Software Engineer',
     phone: '+1 (555) 234-5678',
     isPhoneVerified: false,
+    needsPayrollLogin: true,
     personal: {
       dob: '1992-06-14',
       gender: 'Male',
@@ -33,7 +35,8 @@ const initialEmployees: EmployeeMaster[] = [
       accountNumber: 'XXXX-XXXX-8821',
       ifscCode: 'CHAS0001298',
       panNumber: 'ABCDE1234F',
-      uanPfNumber: '100982348123',
+      uanNumber: '100982348123',
+      pfNumber: 'MHPNK00008820000001234',
       esiNumber: '3100982312',
     },
     educations: [
@@ -91,6 +94,7 @@ const initialEmployees: EmployeeMaster[] = [
     designation: 'Lead React Developer',
     phone: '+1 (555) 345-6789',
     isPhoneVerified: true,
+    needsPayrollLogin: true,
     personal: {
       dob: '1990-11-22',
       gender: 'Female',
@@ -105,7 +109,8 @@ const initialEmployees: EmployeeMaster[] = [
       accountNumber: 'XXXX-XXXX-4432',
       ifscCode: 'BOFA0004412',
       panNumber: 'FGHIJ5678K',
-      uanPfNumber: '100876543210',
+      uanNumber: '100876543210',
+      pfNumber: 'MHPNK00008820000005678',
       esiNumber: '3100876543',
     },
     educations: [
@@ -149,6 +154,7 @@ const initialEmployees: EmployeeMaster[] = [
     designation: 'Talent Acquisition Manager',
     phone: '+1 (555) 456-7890',
     isPhoneVerified: false,
+    needsPayrollLogin: false,
     personal: {
       dob: '1988-04-05',
       gender: 'Male',
@@ -163,7 +169,8 @@ const initialEmployees: EmployeeMaster[] = [
       accountNumber: 'XXXX-XXXX-9912',
       ifscCode: 'WFBI0008890',
       panNumber: 'LMNOP9012Q',
-      uanPfNumber: '100765432109',
+      uanNumber: '100765432109',
+      pfNumber: 'MHPNK00008820000009912',
       esiNumber: '3100765432',
     },
     educations: [
@@ -192,10 +199,18 @@ let mockDb = [...initialEmployees];
 
 export const employeeApi = {
   async search(filters: EmployeeSearchFilters = {}): Promise<EmployeeSearchResult> {
+    const cleanDepartment = filters.department &&
+      filters.department !== '0' &&
+      filters.department.toLowerCase() !== '-- select --' &&
+      filters.department.toLowerCase() !== '-- select department --' &&
+      filters.department.toLowerCase() !== 'all'
+        ? filters.department
+        : '';
+
     if (!USE_MOCK_API) {
       const params = new URLSearchParams();
       if (filters.query) params.append('query', filters.query);
-      if (filters.department) params.append('department', filters.department);
+      if (cleanDepartment) params.append('department', cleanDepartment);
       if (filters.page) params.append('page', String(filters.page));
       if (filters.pageSize) params.append('pageSize', String(filters.pageSize));
       return httpClient.get<EmployeeSearchResult>(`/employees?${params.toString()}`);
@@ -213,8 +228,8 @@ export const employeeApi = {
           );
         }
 
-        if (filters.department && filters.department !== '-- Select --' && filters.department !== 'All') {
-          results = results.filter((emp) => emp.department === filters.department);
+        if (cleanDepartment) {
+          results = results.filter((emp) => emp.department === cleanDepartment);
         }
 
         const page = filters.page || 1;
@@ -236,6 +251,7 @@ export const employeeApi = {
 
   async getById(idOrCode: string): Promise<EmployeeMaster | null> {
     if (!USE_MOCK_API) {
+      //console.log(`Fetching employee by ID or Code via API: ${idOrCode}`);
       return httpClient.get<EmployeeMaster>(`/employees/${idOrCode}`);
     }
 
@@ -251,6 +267,7 @@ export const employeeApi = {
 
   async create(employeeData: Partial<EmployeeMaster>): Promise<EmployeeMaster> {
     if (!USE_MOCK_API) {
+      //console.log('Creating employee via API:', employeeData);
       return httpClient.post<EmployeeMaster>('/employees', employeeData);
     }
 
@@ -268,6 +285,7 @@ export const employeeApi = {
           designation: employeeData.designation || 'Associate Specialist',
           phone: employeeData.phone || '+1 (555) 000-0000',
           isPhoneVerified: false,
+          needsPayrollLogin: employeeData.needsPayrollLogin || false,
           personal: employeeData.personal || {
             dob: '1995-01-01',
             gender: 'Male',
@@ -282,7 +300,8 @@ export const employeeApi = {
             accountNumber: 'XXXX-XXXX-0000',
             ifscCode: 'NATB0001000',
             panNumber: 'AAAAA0000A',
-            uanPfNumber: '100000000000',
+            uanNumber: '100000000000',
+            pfNumber: 'MHPNK00008820000000000',
             esiNumber: '3100000000',
           },
           educations: employeeData.educations || [],
@@ -300,6 +319,7 @@ export const employeeApi = {
 
   async update(id: string, updatedFields: Partial<EmployeeMaster>): Promise<EmployeeMaster> {
     if (!USE_MOCK_API) {
+      //console.log(`Updating employee ${id} via API with fields:`, updatedFields);
       return httpClient.put<EmployeeMaster>(`/employees/${id}`, updatedFields);
     }
 
@@ -358,21 +378,61 @@ export const employeeApi = {
     });
   },
 
-  async uploadFile(file: File): Promise<{ url: string; name: string }> {
+  async uploadFile(
+    file: File,
+    type: 'avatars' | 'documents',
+    employeeId: string,
+    docType?: string | null
+  ): Promise<{ fileUrl: string }> {
     if (!USE_MOCK_API) {
       const formData = new FormData();
       formData.append('file', file);
-      return httpClient.post<{ url: string; name: string }>('/uploads', formData);
+      const params = new URLSearchParams();
+      params.append('type', type);
+      params.append('employeeId', employeeId);
+      if (type === 'documents' && docType) {
+        // Map UI docType to backend snake_case format
+        const cleanDocType = docType.toLowerCase().replace(/\s+/g, '_');
+        params.append('docType', cleanDocType);
+      }
+      return httpClient.post<{ fileUrl: string }>(`/files/upload?${params.toString()}`, formData);
     }
 
     return new Promise((resolve) => {
       setTimeout(() => {
-        const objectUrl = URL.createObjectURL(file);
         resolve({
-          url: objectUrl,
-          name: file.name,
+          fileUrl: `${type}/mock-${Date.now()}-${file.name}`,
         });
+      }, 800);
+    });
+  },
+
+  async deleteFile(key: string): Promise<{ success: boolean; message: string }> {
+    if (!USE_MOCK_API) {
+      return httpClient.delete<{ success: boolean; message: string }>(`/files?key=${encodeURIComponent(key)}`);
+    }
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve({ success: true, message: 'File deleted successfully.' });
       }, 300);
     });
+  },
+
+  async downloadFile(path: string): Promise<Blob> {
+    if (!USE_MOCK_API) {
+      return httpClient.getBlob(`/files/download?path=${encodeURIComponent(path)}`);
+    }
+
+    return new Blob(['Mock file content'], { type: 'application/octet-stream' });
+  },
+
+  async getDepartments(): Promise<string[]> {
+    const list = await settingsApi.getDepartments(false); // active only
+    return list.map((d) => d.name);
+  },
+
+  async getDesignations(department?: string): Promise<string[]> {
+    const list = await settingsApi.getDesignations(department, false); // active only
+    return list.map((d) => d.title);
   },
 };

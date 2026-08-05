@@ -28,7 +28,8 @@ export interface AccountDetails {
   accountNumber: string;
   ifscCode: string;
   panNumber: string;
-  uanPfNumber: string;
+  uanNumber: string;
+  pfNumber: string;
   esiNumber: string;
 }
 
@@ -69,6 +70,7 @@ export interface EmployeeMaster {
   designation: string;
   phone: string;
   isPhoneVerified: boolean;
+  needsPayrollLogin: boolean;
   personal: PersonalDetails;
   account: AccountDetails;
   educations: EducationEntry[];

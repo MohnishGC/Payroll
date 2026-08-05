@@ -24,12 +24,7 @@ export const EmployeeRecordPicker: React.FC<EmployeeRecordPickerProps> = ({
     ? `${selectedEmployee.code} - ${selectedEmployee.name}`
     : inputValue;
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      setIsModalOpen(true);
-    }
-  };
+
 
   const handleClear = () => {
     setInputValue('');
@@ -48,14 +43,12 @@ export const EmployeeRecordPicker: React.FC<EmployeeRecordPickerProps> = ({
             id="record-picker-input"
             type="text"
             variant="borderless"
-            placeholder="Type Employee Code or Name..."
+            placeholder="Click search icon or box to select employee..."
             iconName="user"
             value={displayValue}
-            onChange={(e) => {
-              if (selectedEmployee) onClearEmployee();
-              setInputValue(e.target.value);
-            }}
-            onKeyDown={handleKeyDown}
+            readOnly
+            onClick={() => setIsModalOpen(true)}
+            style={{ cursor: 'pointer' }}
           />
         </div>
 

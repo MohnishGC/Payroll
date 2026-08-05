@@ -1,11 +1,50 @@
-import type { LoginCredentials, AuthResponse } from '../types/auth.types';
+import type { LoginCredentials, AuthResponse, AuthUser } from '../types/auth.types';
+import { USE_MOCK_API } from '../../../constants/config';
+import { httpClient } from '../../../lib/http/httpClient';
 
-// Mock authentication API simulating asynchronous network calls
+interface LoginApiResponse {
+  token: string;
+  user_data: {
+    id: string;
+    email: string;
+  };
+}
+
 export const authApi = {
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
+    if (!USE_MOCK_API) {
+      try {
+        const res = await httpClient.post<LoginApiResponse>('/api/auth/login', {
+          username: credentials.username,
+          password: credentials.password,
+        });
+
+        // Map backend's id and email to the local AuthUser structure
+        const user: AuthUser = {
+          id: res.user_data.id,
+          username: res.user_data.email,
+          name: res.user_data.email.split('@')[0], // Fallback name
+          role: 'Payroll Administrator', // Default role
+        };
+
+        return {
+          success: true,
+          message: 'Signed in successfully! Welcome to Timee.',
+          token: res.token,
+          user,
+        };
+      } catch (err: unknown) {
+        const errorObj = err as Error;
+        if (errorObj.message?.includes('Failed to fetch')) {
+          throw new Error('Server unreachable. Please try again later.');
+        }
+        throw new Error(errorObj.message || 'Invalid username or password credentials.');
+      }
+    }
+
+    // Mock implementation
     return new Promise((resolve, reject) => {
       setTimeout(() => {
-        // Simple mock check
         if (credentials.username.trim().toLowerCase() === 'admin' && credentials.password === 'error123') {
           reject(new Error('Invalid username or password credentials.'));
         } else {
@@ -22,6 +61,33 @@ export const authApi = {
           });
         }
       }, 1200);
+    });
+  },
+
+  async logout(): Promise<AuthResponse> {
+    if (!USE_MOCK_API) {
+      try {
+        const res = await httpClient.post<{ message?: string }>('/api/auth/logout');
+        return {
+          success: true,
+          message: res.message || 'Logged out successfully',
+        };
+      } catch (err: unknown) {
+        console.error('API logout request failed:', err);
+        return {
+          success: false,
+          message: 'Logout API call failed, session terminated locally.',
+        };
+      }
+    }
+
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve({
+          success: true,
+          message: 'Logged out successfully',
+        });
+      }, 500);
     });
   },
 

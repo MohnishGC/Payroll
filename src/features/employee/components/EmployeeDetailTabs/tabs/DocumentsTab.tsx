@@ -1,36 +1,34 @@
-import React from 'react';
-import type { EmployeeMaster, EmployeeDocument } from '../../../types/employee.types';
+import React, { useState } from 'react';
+import type { EmployeeMaster } from '../../../types/employee.types';
 import { Icon } from '../../../../../components/icons/Icon';
+import { employeeApi } from '../../../services/employeeApi';
 
 export interface DocumentsTabProps {
   employee: EmployeeMaster;
-  isEditing: boolean;
-  onUpdate: (updated: Partial<EmployeeMaster>) => void;
 }
 
-export const DocumentsTab: React.FC<DocumentsTabProps> = ({
-  employee,
-  isEditing,
-  onUpdate,
-}) => {
-  const documents = employee.documents || [];
+export const DocumentsTab: React.FC<DocumentsTabProps> = ({ employee }) => {
+  const documents = employee?.documents || (employee as any)?.Documents || [];
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
-  const handleUploadClick = () => {
-    const newDoc: EmployeeDocument = {
-      id: `doc-${Date.now()}`,
-      name: `Verification_Doc_${documents.length + 1}.pdf`,
-      type: 'PDF Document',
-      uploadedDate: new Date().toISOString().split('T')[0],
-    };
-    onUpdate({
-      documents: [...documents, newDoc],
-    });
-  };
-
-  const handleRemoveDoc = (id: string) => {
-    onUpdate({
-      documents: documents.filter((doc) => doc.id !== id),
-    });
+  const handleDownload = async (id: string, path: string, fileName: string) => {
+    setDownloadingId(id);
+    try {
+      const blob = await employeeApi.downloadFile(path);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Failed to download secure file:', err);
+      alert('Failed to download secure document.');
+    } finally {
+      setDownloadingId(null);
+    }
   };
 
   return (
@@ -68,47 +66,26 @@ export const DocumentsTab: React.FC<DocumentsTabProps> = ({
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <button
                 type="button"
-                style={{ background: 'none', border: 'none', color: 'var(--color-primary)', cursor: 'pointer' }}
-                title="View / Download Document"
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: doc.fileUrl ? 'var(--color-primary)' : 'var(--color-text-muted)',
+                  cursor: doc.fileUrl ? 'pointer' : 'not-allowed',
+                }}
+                title={doc.fileUrl ? "View / Download Document" : "No file attached"}
+                onClick={() => doc.fileUrl && handleDownload(doc.id, doc.fileUrl, doc.name)}
+                disabled={!doc.fileUrl || downloadingId === doc.id}
               >
-                <Icon name="arrowRight" size={16} />
+                {downloadingId === doc.id ? (
+                  <span style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>Loading...</span>
+                ) : (
+                  <Icon name="arrowRight" size={16} />
+                )}
               </button>
-              {isEditing && (
-                <button
-                  type="button"
-                  onClick={() => handleRemoveDoc(doc.id)}
-                  style={{ background: 'none', border: 'none', color: 'var(--color-danger)', cursor: 'pointer' }}
-                  title="Delete Document"
-                >
-                  <Icon name="close" size={16} />
-                </button>
-              )}
             </div>
           </div>
         ))
       )}
-
-      <button
-        type="button"
-        onClick={handleUploadClick}
-        style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '8px',
-          padding: '10px 18px',
-          borderRadius: 'var(--radius-md)',
-          backgroundColor: 'var(--color-primary-bg)',
-          color: 'var(--color-primary)',
-          fontSize: '13px',
-          fontWeight: 600,
-          border: '1px solid #BFDBFE',
-          cursor: 'pointer',
-          alignSelf: 'flex-start',
-        }}
-      >
-        <Icon name="plus" size={16} />
-        <span>Upload Document</span>
-      </button>
     </div>
   );
 };

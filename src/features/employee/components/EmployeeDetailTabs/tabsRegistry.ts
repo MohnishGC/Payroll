@@ -10,8 +10,6 @@ export interface TabRegistryEntry {
   label: string;
   component: React.ComponentType<{
     employee: EmployeeMaster;
-    isEditing: boolean;
-    onUpdate: (updated: Partial<EmployeeMaster>) => void;
   }>;
 }
 

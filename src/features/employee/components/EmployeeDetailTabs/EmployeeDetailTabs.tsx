@@ -6,21 +6,17 @@ import './EmployeeDetailTabs.css';
 
 export interface EmployeeDetailTabsProps {
   employee: EmployeeMaster;
-  isEditing: boolean;
-  onUpdate: (updated: Partial<EmployeeMaster>) => void;
 }
 
-export const EmployeeDetailTabs: React.FC<EmployeeDetailTabsProps> = ({
-  employee,
-  isEditing,
-  onUpdate,
-}) => {
+export const EmployeeDetailTabs: React.FC<EmployeeDetailTabsProps> = ({ employee }) => {
   const [activeTabKey, setActiveTabKey] = useState<string>('personal');
 
   const tabItems = tabsRegistry.map((tab) => {
     let badge: number | undefined;
-    if (tab.key === 'education') badge = employee.educations?.length;
-    if (tab.key === 'documents') badge = employee.documents?.length;
+    const educations = employee?.educations || (employee as any)?.Educations || [];
+    const documents = employee?.documents || (employee as any)?.Documents || [];
+    if (tab.key === 'education') badge = educations.length;
+    if (tab.key === 'documents') badge = documents.length;
     return {
       key: tab.key,
       label: tab.label,
@@ -41,11 +37,7 @@ export const EmployeeDetailTabs: React.FC<EmployeeDetailTabsProps> = ({
       />
 
       <div className="employee-detail-tabs__content">
-        <ActiveComponent
-          employee={employee}
-          isEditing={isEditing}
-          onUpdate={onUpdate}
-        />
+        <ActiveComponent employee={employee} />
       </div>
     </div>
   );
