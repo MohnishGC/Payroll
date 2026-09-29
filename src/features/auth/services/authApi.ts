@@ -7,6 +7,9 @@ interface LoginApiResponse {
   user_data: {
     id: string;
     email: string;
+    employee_id?: string;
+    employee_code?: string;
+    userrole?: string;
   };
 }
 
@@ -24,7 +27,9 @@ export const authApi = {
           id: res.user_data.id,
           username: res.user_data.email,
           name: res.user_data.email.split('@')[0], // Fallback name
-          role: 'Payroll Administrator', // Default role
+          role: res.user_data.userrole || 'Payroll Administrator', // Default role
+          employeeId: res.user_data.employee_id,
+          employeeCode: res.user_data.employee_code,
         };
 
         return {
@@ -57,6 +62,8 @@ export const authApi = {
               username: credentials.username,
               name: 'Alex Morgan',
               role: 'Payroll Administrator',
+              employeeId: 'emp-101',
+              employeeCode: 'SYS-ADMIN',
             },
           });
         }

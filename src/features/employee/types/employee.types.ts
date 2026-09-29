@@ -71,6 +71,9 @@ export interface EmployeeMaster {
   phone: string;
   isPhoneVerified: boolean;
   needsPayrollLogin: boolean;
+  category?: string;
+  branchId?: string;
+  branchName?: string;
   personal: PersonalDetails;
   account: AccountDetails;
   educations: EducationEntry[];

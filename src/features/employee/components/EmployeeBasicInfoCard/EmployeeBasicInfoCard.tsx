@@ -96,6 +96,22 @@ export const EmployeeBasicInfoCard: React.FC<EmployeeBasicInfoCardProps> = ({ em
           <span className="employee-basic-info-card__field-label">Joined Date</span>
           <span className="employee-basic-info-card__field-value">{employee?.joinedDate || '—'}</span>
         </div>
+
+        {/* Branch */}
+        <div className="employee-basic-info-card__field">
+          <span className="employee-basic-info-card__field-label">Branch</span>
+          <span className="employee-basic-info-card__field-value">
+            {employee?.branchName || (employee as any).BranchName || '—'}
+          </span>
+        </div>
+
+        {/* Category */}
+        <div className="employee-basic-info-card__field">
+          <span className="employee-basic-info-card__field-label">Category</span>
+          <span className="employee-basic-info-card__field-value">
+            {employee?.category || (employee as any).Category || '—'}
+          </span>
+        </div>
       </div>
     </div>
   );

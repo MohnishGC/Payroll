@@ -57,6 +57,8 @@ export const sidebarConfig: SidebarSection[] = [
           { label: 'Designation', path: '/settings/designations' },
           { label: 'Financial Year', path: '/settings/financial-year' },
           { label: 'Holiday', path: '/settings/holidays' },
+          { label: 'App Setting', path: '/settings/application-settings' },
+          { label: 'Payroll Config', path: '/settings/payroll-configuration' },
         ],
       },
     ],

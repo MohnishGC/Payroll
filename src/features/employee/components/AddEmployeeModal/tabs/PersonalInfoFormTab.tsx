@@ -4,6 +4,7 @@ import { AvatarUpload } from '../../../../../components/ui/AvatarUpload/AvatarUp
 import type { PersonalInfoFormValues } from '../../../validation/personalInfoSchema';
 import { useSecureImage } from '../../../hooks/useSecureImage';
 import { employeeApi } from '../../../services/employeeApi';
+import { settingsApi, type Branch } from '../../../../settings/services/settingsApi';
 import './FormTabCommon.css';
 
 export interface PersonalInfoFormTabProps {
@@ -22,11 +23,16 @@ export const PersonalInfoFormTab: React.FC<PersonalInfoFormTabProps> = ({
   const { src: securePreviewUrl } = useSecureImage(values.avatarUrl);
   const [departmentsList, setDepartmentsList] = useState<string[]>([]);
   const [designationsList, setDesignationsList] = useState<string[]>([]);
+  const [branchesList, setBranchesList] = useState<Branch[]>([]);
 
   useEffect(() => {
     employeeApi.getDepartments()
       .then((depts) => setDepartmentsList(depts))
       .catch((err) => console.error('Failed to load departments:', err));
+
+    settingsApi.getBranches(undefined, undefined, false)
+      .then((branches) => setBranchesList(branches))
+      .catch((err) => console.error('Failed to load branches:', err));
   }, []);
 
   useEffect(() => {
@@ -321,6 +327,44 @@ export const PersonalInfoFormTab: React.FC<PersonalInfoFormTabProps> = ({
             disabled={disabled}
             required
           />
+
+          {/* Branch */}
+          <div className="form-field">
+            <label className="form-field__label" htmlFor="field-branchId">Branch *</label>
+            <select
+              id="field-branchId"
+              className={`form-field__select ${errors.branchId ? 'form-field__select--error' : ''}`}
+              value={values.branchId}
+              onChange={(e) => onChange('branchId', e.target.value)}
+              disabled={disabled}
+            >
+              <option value="-- Select --">-- Select Branch --</option>
+              {branchesList.map((branch) => (
+                <option key={branch.id} value={branch.id}>
+                  {branch.name} ({branch.code})
+                </option>
+              ))}
+            </select>
+            {errors.branchId && <span className="form-field__error-msg" role="alert">{errors.branchId}</span>}
+          </div>
+
+          {/* Category */}
+          <div className="form-field">
+            <label className="form-field__label" htmlFor="field-category">Category *</label>
+            <select
+              id="field-category"
+              className={`form-field__select ${errors.category ? 'form-field__select--error' : ''}`}
+              value={values.category}
+              onChange={(e) => onChange('category', e.target.value)}
+              disabled={disabled}
+            >
+              <option value="-- Select --">-- Select Category --</option>
+              {['Full-time', 'Part-time', 'Contract', 'Internship', 'Resigned', 'Terminated'].map((cat) => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
+            {errors.category && <span className="form-field__error-msg" role="alert">{errors.category}</span>}
+          </div>
         </div>
       </div>
     </div>

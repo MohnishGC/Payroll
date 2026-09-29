@@ -39,7 +39,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <div className="sidebar__header">
         <div className="sidebar__logo">
           <span className="sidebar__logo-badge">
-            <Icon name="plus" size={18} color="#FFFFFF" aria-label="Efficio Logo" />
+            <Icon name="briefcase" size={18} color="#FFFFFF" aria-label="Efficio Logo" />
           </span>
           {!isCollapsed && <span className="sidebar__logo-title">Payroll</span>}
         </div>

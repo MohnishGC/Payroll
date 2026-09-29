@@ -42,6 +42,8 @@ const initialValues: AddEmployeeFormValues = {
     department: '-- Select --',
     designation: '-- Select --',
     joinedDate: new Date().toISOString().split('T')[0],
+    category: '-- Select --',
+    branchId: '-- Select --',
     avatarUrl: undefined,
     avatarFile: null,
     needsPayrollLogin: false,
@@ -228,6 +230,8 @@ export const useAddEmployeeForm = () => {
         department: employee.department,
         designation: employee.designation,
         joinedDate: employee.joinedDate,
+        category: employee.category || (employee as any).Category || '-- Select --',
+        branchId: employee.branchId || (employee as any).BranchId || '-- Select --',
         avatarUrl: employee.avatarUrl || (employee as any).AvatarUrl,
         avatarFile: null,
         needsPayrollLogin: employee.needsPayrollLogin || false,
@@ -264,7 +268,6 @@ export const useAddEmployeeForm = () => {
       documents: employee.documents?.length > 0
         ? employee.documents.map((doc) => ({
             id: doc.id,
-            file: new File([], doc.name),
             name: doc.name,
             size: 0,
             docType: doc.type,
@@ -367,6 +370,8 @@ export const useAddEmployeeForm = () => {
           department: values.personal.department,
           designation: values.personal.designation,
           phone: values.personal.phone,
+          category: values.personal.category,
+          branchId: values.personal.branchId,
           avatarUrl: finalAvatarUrl,
           needsPayrollLogin: values.personal.needsPayrollLogin,
           personal: {
@@ -435,6 +440,8 @@ export const useAddEmployeeForm = () => {
           department: values.personal.department,
           designation: values.personal.designation,
           phone: values.personal.phone,
+          category: values.personal.category,
+          branchId: values.personal.branchId,
           avatarUrl: finalAvatarUrl,
           needsPayrollLogin: values.personal.needsPayrollLogin,
           personal: {

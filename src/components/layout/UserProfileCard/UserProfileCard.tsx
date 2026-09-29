@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Icon } from '../../icons/Icon';
 import { useAuth } from '../../../app/providers/AuthProvider';
+import { employeeApi } from '../../../features/employee/services/employeeApi';
+import { useSecureImage } from '../../../features/employee/hooks/useSecureImage';
 import './UserProfileCard.css';
 
 export interface UserProfileCardProps {
@@ -10,15 +12,34 @@ export interface UserProfileCardProps {
 export const UserProfileCard: React.FC<UserProfileCardProps> = ({ isCollapsed = false }) => {
   const { user, logout } = useAuth();
   const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [avatarPath, setAvatarPath] = useState<string | undefined>(undefined);
   const cardRef = useRef<HTMLDivElement>(null);
 
   const name = user?.name || 'Arnold Smith';
-  const email = `${user?.username || 'arnold.smith'}@efficio.io`;
+  const email = user?.username && user.username.includes('@')
+    ? user.username
+    : `${user?.username || 'arnold.smith'}@efficio.io`;
+
   const initials = name
     .split(' ')
     .map((n) => n[0])
     .join('')
     .substring(0, 2);
+
+  useEffect(() => {
+    const idOrCode = user?.employeeId || user?.employeeCode;
+    if (idOrCode) {
+      employeeApi.getById(idOrCode)
+        .then((emp) => {
+          if (emp) {
+            setAvatarPath(emp.avatarUrl || (emp as any).AvatarUrl);
+          }
+        })
+        .catch((err) => console.error('Failed to load user avatar:', err));
+    }
+  }, [user?.employeeId, user?.employeeCode]);
+
+  const { src: secureAvatarUrl } = useSecureImage(avatarPath);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -39,7 +60,22 @@ export const UserProfileCard: React.FC<UserProfileCardProps> = ({ isCollapsed = 
         aria-expanded={isOpen}
         aria-label="User account menu"
       >
-        <div className="user-profile-card__avatar">{initials}</div>
+        <div className="user-profile-card__avatar">
+          {secureAvatarUrl ? (
+            <img
+              src={secureAvatarUrl}
+              alt={name}
+              style={{
+                width: '100%',
+                height: '100%',
+                borderRadius: '50%',
+                objectFit: 'cover'
+              }}
+            />
+          ) : (
+            initials
+          )}
+        </div>
         {!isCollapsed && (
           <div className="user-profile-card__info">
             <span className="user-profile-card__name">{name}</span>

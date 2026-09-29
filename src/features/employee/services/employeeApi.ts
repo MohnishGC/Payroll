@@ -21,6 +21,9 @@ const initialEmployees: EmployeeMaster[] = [
     phone: '+1 (555) 234-5678',
     isPhoneVerified: false,
     needsPayrollLogin: true,
+    branchId: 'b1111111-2222-3333-4444-555555555555',
+    branchName: 'Mumbai HQ',
+    category: 'Full-time',
     personal: {
       dob: '1992-06-14',
       gender: 'Male',
@@ -95,6 +98,9 @@ const initialEmployees: EmployeeMaster[] = [
     phone: '+1 (555) 345-6789',
     isPhoneVerified: true,
     needsPayrollLogin: true,
+    branchId: 'b2222222-2222-3333-4444-555555555555',
+    branchName: 'Pune Development Center',
+    category: 'Full-time',
     personal: {
       dob: '1990-11-22',
       gender: 'Female',
@@ -267,8 +273,17 @@ export const employeeApi = {
 
   async create(employeeData: Partial<EmployeeMaster>): Promise<EmployeeMaster> {
     if (!USE_MOCK_API) {
-      //console.log('Creating employee via API:', employeeData);
       return httpClient.post<EmployeeMaster>('/employees', employeeData);
+    }
+
+    let branchName = '';
+    if (employeeData.branchId) {
+      try {
+        const branches = await settingsApi.getBranches(undefined, undefined, true);
+        branchName = branches.find((b) => b.id === employeeData.branchId)?.name || '';
+      } catch (e) {
+        console.error(e);
+      }
     }
 
     return new Promise((resolve) => {
@@ -276,6 +291,9 @@ export const employeeApi = {
         const newCode = `EMP-${1000 + mockDb.length + 1}`;
         const newEmployee: EmployeeMaster = {
           id: `emp-${Date.now()}`,
+          category: employeeData.category,
+          branchId: employeeData.branchId,
+          branchName: branchName || undefined,
           code: employeeData.code || newCode,
           name: employeeData.name || 'New Employee',
           joinedDate: employeeData.joinedDate || new Date().toISOString().split('T')[0],
@@ -319,8 +337,17 @@ export const employeeApi = {
 
   async update(id: string, updatedFields: Partial<EmployeeMaster>): Promise<EmployeeMaster> {
     if (!USE_MOCK_API) {
-      //console.log(`Updating employee ${id} via API with fields:`, updatedFields);
       return httpClient.put<EmployeeMaster>(`/employees/${id}`, updatedFields);
+    }
+
+    let branchName: string | undefined = undefined;
+    if (updatedFields.branchId && updatedFields.branchId !== '-- Select --') {
+      try {
+        const branches = await settingsApi.getBranches(undefined, undefined, true);
+        branchName = branches.find((b) => b.id === updatedFields.branchId)?.name;
+      } catch (e) {
+        console.error(e);
+      }
     }
 
     return new Promise((resolve, reject) => {
@@ -334,6 +361,7 @@ export const employeeApi = {
         const updated: EmployeeMaster = {
           ...mockDb[index],
           ...updatedFields,
+          branchName: branchName !== undefined ? branchName : (updatedFields.branchId === '-- Select --' ? undefined : mockDb[index].branchName),
           personal: {
             ...mockDb[index].personal,
             ...(updatedFields.personal || {}),

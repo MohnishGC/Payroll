@@ -30,6 +30,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           username: 'arnold.smith',
           name: 'Arnold Smith',
           role: 'Payroll Administrator',
+          employeeId: 'emp-101',
+          employeeCode: 'SYS-ADMIN',
         };
       }
       return null;

@@ -57,7 +57,11 @@ export const FileUpload: React.FC<FileUploadProps> = ({
     }
   };
 
-  const formatFileSize = (bytes: number): string => {
+  const formatFileSize = (item: UploadedFileItem): string => {
+    if (!item.file && item.fileUrl) {
+      return 'Uploaded';
+    }
+    const bytes = item.size;
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
@@ -122,7 +126,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
                     <span className="file-upload__name" title={item.name}>
                       {item.name}
                     </span>
-                    <span className="file-upload__size">{formatFileSize(item.size)}</span>
+                    <span className="file-upload__size">{formatFileSize(item)}</span>
                   </div>
                 </div>
 

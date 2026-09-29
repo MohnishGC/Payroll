@@ -14,6 +14,8 @@ export interface PersonalInfoFormValues {
   department: string;
   designation: string;
   joinedDate: string;
+  category: string;
+  branchId: string;
   avatarUrl?: string;
   avatarFile?: File | null;
   needsPayrollLogin: boolean;
@@ -66,6 +68,14 @@ export const validatePersonalInfo = (
 
   if (!values.joinedDate) {
     errors.joinedDate = 'Joining Date is required.';
+  }
+
+  if (!values.category || values.category === '-- Select --') {
+    errors.category = 'Category is required.';
+  }
+
+  if (!values.branchId || values.branchId === '-- Select --') {
+    errors.branchId = 'Branch is required.';
   }
 
   return errors;

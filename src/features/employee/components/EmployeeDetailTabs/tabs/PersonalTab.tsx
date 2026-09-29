@@ -44,6 +44,16 @@ export const PersonalTab: React.FC<TabProps> = ({ employee }) => {
         <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-text-light)', textTransform: 'uppercase' }}>Emergency Contact Phone</label>
         <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-text-heading)', marginTop: '4px' }}>{p.emergencyContactPhone || '—'}</p>
       </div>
+
+      <div>
+        <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-text-light)', textTransform: 'uppercase' }}>Branch</label>
+        <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-text-heading)', marginTop: '4px' }}>{employee.branchName || (employee as any).BranchName || '—'}</p>
+      </div>
+
+      <div>
+        <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-text-light)', textTransform: 'uppercase' }}>Category</label>
+        <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-text-heading)', marginTop: '4px' }}>{employee.category || (employee as any).Category || '—'}</p>
+      </div>
     </div>
   );
 };

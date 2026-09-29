@@ -27,6 +27,8 @@ export interface AuthUser {
   username: string;
   name: string;
   role: string;
+  employeeId?: string;
+  employeeCode?: string;
 }
 
 export interface AuthResponse {

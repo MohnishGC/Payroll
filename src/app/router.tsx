@@ -24,6 +24,8 @@ import { CitiesPage } from '../features/settings/pages/CitiesPage';
 import { BranchesPage } from '../features/settings/pages/BranchesPage';
 import { FinancialYearPage } from '../features/settings/pages/FinancialYearPage';
 import { HolidaysPage } from '../features/settings/pages/HolidaysPage';
+import { ApplicationSettingsPage } from '../features/settings/pages/ApplicationSettingsPage';
+import { PayrollConfigurationPage } from '../features/settings/pages/PayrollConfigurationPage';
 
 export const AppRouter: React.FC = () => {
   return (
@@ -57,6 +59,8 @@ export const AppRouter: React.FC = () => {
         <Route path="settings/designations" element={<DesignationsPage />} />
         <Route path="settings/financial-year" element={<FinancialYearPage />} />
         <Route path="settings/holidays" element={<HolidaysPage />} />
+        <Route path="settings/application-settings" element={<ApplicationSettingsPage />} />
+        <Route path="settings/payroll-configuration" element={<PayrollConfigurationPage />} />
       </Route>
 
       {/* Fallback Catch-All */}
